@@ -36,7 +36,7 @@ def lambda_handler(event, context):
             }
     not_upload = re_upload(not_match, cn_complete_prefix, s3_cn)
     alarm(not_match, not_upload, cn_complete_prefix)
-    print("find not sync file")
+    print("find unsynchronized files")
     return {
                 'statusCode': 200,
                 'body': json.dumps('Find Unsynchronized Files')
