@@ -2,7 +2,6 @@ import json
 import boto3
 import datetime
 import os
-import datetime
 
 
 global_ak = os.environ['global_ak']
@@ -98,6 +97,10 @@ def alarm(not_match, not_upload, prefix):
 
 # get s3 object list
 def get_s3_obj_list(s3_client, bucket_name, prefix):
+    
+    # 仅检测1小时前上传的文件，避免将正在复制中的文件判定为遗漏文件
+    time_pivot = datetime.datetime.now() + datetime.timedelta(hours=-1)
+
     s3_obj_list = []
     paginator = s3_client.get_paginator('list_objects_v2')
     response_iterator = paginator.paginate(
@@ -112,8 +115,9 @@ def get_s3_obj_list(s3_client, bucket_name, prefix):
             break
         contents = response['Contents']
         for content in contents:
-            add_key = content['Key'].split(prefix)[1]
-            s3_obj_list.append(add_key)
+            if content['LastModified'].timestamp() < time_pivot.timestamp():
+                add_key = content['Key'].split(prefix)[1]
+                s3_obj_list.append(add_key)
         if 'NextToken' not in response.keys():
             break
         response = s3_iter.__next__()
