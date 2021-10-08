@@ -117,7 +117,8 @@ def get_s3_obj_list(s3_client, bucket_name, prefix):
         for content in contents:
             if content['LastModified'].timestamp() < time_pivot.timestamp():
                 add_key = content['Key'].split(prefix)[1]
-                s3_obj_list.append(add_key)
+                if add_key: # 忽略单纯的prefix
+                    s3_obj_list.append(add_key)
         if 'NextToken' not in response.keys():
             break
         response = s3_iter.__next__()
